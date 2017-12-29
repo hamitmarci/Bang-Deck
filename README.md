@@ -1,2 +1,0 @@
-# Bang-Deck
-bang deck
