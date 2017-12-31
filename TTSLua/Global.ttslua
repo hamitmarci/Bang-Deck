@@ -1,0 +1,287 @@
+--[[ GUID´s --]]
+character_deck_GUID = 'ceef49'
+role_deck_GUID = 'b6320d'
+playcard_deck_GUID = 'e6f919'
+initbutton_object_GUID = 'd9f3f0'
+
+--[[ Character Cars GUIDS--]]
+character_lifepoints = {}
+character_lifepoints['IceFox'] = 4
+character_lifepoints['3Head'] = 4
+character_lifepoints['DemonSlayer'] = 4
+character_lifepoints['LightDragon'] = 3
+character_lifepoints['Vampire'] = 5
+character_lifepoints['IceDragon'] = 5
+character_lifepoints['Decapitator'] = 5
+character_lifepoints['SecretHorse'] = 4
+character_lifepoints['Angel & Warrior'] = 6
+character_lifepoints['HolyUnicorn'] = 5
+character_lifepoints['FourWing'] = 1
+character_lifepoints['DarkDragon'] = 2
+character_lifepoints['DemonWolf'] = 4
+character_lifepoints['LivingTree'] = 8
+character_lifepoints['FireDragon'] = 5
+character_lifepoints['FrozenWolf'] = 4
+character_lifepoints['UnDead'] = 3
+character_lifepoints['Raresto'] = 2
+character_lifepoints['DragonSlayer'] = 5
+character_lifepoints['Defender'] = 3
+
+character_shieldpoints = {}
+character_shieldpoints['IceFox'] = 0
+character_shieldpoints['3Head'] = 0
+character_shieldpoints['DemonSlayer'] = 0
+character_shieldpoints['LightDragon'] = 0
+character_shieldpoints['Vampire'] = 0
+character_shieldpoints['IceDragon'] = 0
+character_shieldpoints['Decapitator'] = 0
+character_shieldpoints['SecretHorse'] = 0
+character_shieldpoints['Angel & Warrior'] = 0
+character_shieldpoints['HolyUnicorn'] = 0
+character_shieldpoints['FourWing'] = 6
+character_shieldpoints['DarkDragon'] = 0
+character_shieldpoints['DemonWolf'] = 0
+character_shieldpoints['LivingTree'] = 0
+character_shieldpoints['FireDragon'] = 0
+character_shieldpoints['FrozenWolf'] = 0
+character_shieldpoints['UnDead'] = 0
+character_shieldpoints['Raresto'] = 0
+character_shieldpoints['DragonSlayer'] = 0
+character_shieldpoints['Defender'] = 0
+
+initbutton_parameter = {}
+initbutton_parameter.click_function = 'initGame'
+initbutton_parameter.function_owner = nil
+initbutton_parameter.label = 'Start Game'
+initbutton_parameter.position = {0,0,-0.5}
+initbutton_parameter.rotation= {90,180,0}
+initbutton_parameter.scale = {1,1,1}
+initbutton_parameter.width = 550
+initbutton_parameter.height = 200
+initbutton_parameter.fonz_size = 100
+initbutton_parameter.font_color = {0,0,0,1}
+
+initbutton2_parameter = {}
+initbutton2_parameter.click_function = 'RotateCards'
+initbutton2_parameter.function_owner = nil
+initbutton2_parameter.label = 'Rotate Cards'
+initbutton2_parameter.position = {0,0,-0.5}
+initbutton2_parameter.rotation= {90,180,0}
+initbutton2_parameter.scale = {1,1,1}
+initbutton2_parameter.width = 550
+initbutton2_parameter.height = 200
+initbutton2_parameter.fonz_size = 100
+initbutton2_parameter.font_color = {0,0,0,1}
+
+function onLoad()
+
+    --[[ Create decks --]]
+    printToAll('Fantasy Bang is developed by:', {r = 1, g = 1, b = 1})
+    printToAll('card designer: Hamit Kiziltas, Manuel Gulz', {r = 1, g = 1, b = 1})
+    printToAll('programmer: Marcel Römer', {r = 1, g = 1, b = 1})
+
+    character_deck = getObjectFromGUID(character_deck_GUID)
+    role_deck = getObjectFromGUID(role_deck_GUID)
+    playcard_deck = getObjectFromGUID(playcard_deck_GUID)
+    initbutton_object = getObjectFromGUID(initbutton_object_GUID)
+    initbutton_object.setPosition({0, 20, 0})
+    initbutton_object.setLock(true)
+    initbutton_object.createButton(initbutton_parameter)
+
+
+
+
+end
+
+--[[ The onUpdate event is called once per frame. --]]
+function onUpdate ()
+
+end
+
+
+function onChat(message, player)
+
+
+end
+
+function initGame()
+
+    initbutton_object.removeButton(0)
+    initbutton_object.createButton(initbutton2_parameter)
+
+    playerColors = getSeatedPlayers()
+    players_ = Player.getPlayers()
+    players_Size = tableLength(playerColors)
+    playerLifepoints = {}
+    playerShieldpoints = {}
+
+
+    distributeCards()
+    spawnLifepointCounters()
+    spawnRangeCounters()
+    spawnDistanceCounters()
+    spawnShieldCounters()
+
+end
+
+function distributeCards()
+
+    -- Deal character cards
+    character_deck.randomize()
+    for  i = 1, players_Size, 1
+    do
+
+        dealtCard = character_deck.dealToColorWithOffset({0,0,0}, true, playerColors[i])
+        playerLifepoints[i] = character_lifepoints[dealtCard.getName()]
+        playerShieldpoints[i] = character_shieldpoints[dealtCard.getName()]
+        --pString = 'Player ', playerColors[i], ' is: ', dealtCard.getName(),' Lifepoints: ', playerLifepoints[i]
+        --printToAll(pString, {r = 1, g = 1, b = 1})
+
+    end
+
+    -- Deal playcards
+    playcard_deck.randomize()
+
+    for i = 1, players_Size, 1
+    do
+        for o = 1, playerLifepoints[i], 1
+        do
+            playcard_deck.dealToColorWithOffset({0,0,0}, true, playerColors[i])
+        end
+
+    end
+
+
+
+    role_deck.randomize()
+    role_deck.deal(1)
+
+
+end
+
+function RotateCards()
+
+    initbutton_object.destruct()
+
+    --Rotate the cards
+    for i = 1, players_Size, 1
+    do
+
+
+        objects = players_[i].getHandObjects()
+
+        for o = 1, tableLength(objects), 1
+        do
+
+            objects[o].setRotation({0,180,0})
+            print(objects[o].getName(), ' Rotation: ', objects[o].getRotation())
+
+        end
+
+    end
+
+end
+
+function spawnLifepointCounters()
+
+    lifepointCounter = {}
+    local par = {}
+    par.type = 'Counter'
+
+    for i = 1, players_Size, 1
+    do
+
+
+        par.position = players_[i].getHandTransform().position
+        par.position.x = par.position.x + (players_[i].getHandTransform().forward.x * 5)
+        par.position.z = par.position.z + (players_[i].getHandTransform().forward.z * 5)
+
+        lifepointCounter[i] = spawnObject(par)
+        lifepointCounter[i].setValue(playerLifepoints[i])
+		lifepointCounter[i].setName('Lifepoints')
+        lifepointCounter[i].setColorTint({r = 0; g = 1; b = 0})
+    end
+
+end
+
+function spawnRangeCounters()
+
+    rangeCounter = {}
+    local par = {}
+    par.type = 'Counter'
+
+    for i = 1, players_Size, 1
+    do
+
+
+        par.position = players_[i].getHandTransform().position
+        par.position.x = par.position.x + (players_[i].getHandTransform().forward.x * 7)
+        par.position.z = par.position.z + (players_[i].getHandTransform().forward.z * 7)
+
+
+
+		rangeCounter[i] = spawnObject(par)
+        rangeCounter[i].setValue(0)
+		rangeCounter[i].setName('Range')
+        rangeCounter[i].setColorTint({r = 1; g = 0; b = 0})
+    end
+
+end
+
+function spawnDistanceCounters()
+
+    rangeCounter = {}
+    local par = {}
+    par.type = 'Counter'
+
+    for i = 1, players_Size, 1
+    do
+
+
+        par.position = players_[i].getHandTransform().position
+        par.position.x = par.position.x + (players_[i].getHandTransform().forward.x * 5)
+        par.position.z = par.position.z + (players_[i].getHandTransform().forward.z * 5)
+
+		par.position.x = par.position.x + (players_[i].getHandTransform().right.x * -3)
+		par.position.z = par.position.z + (players_[i].getHandTransform().right.z * -3)
+
+		rangeCounter[i] = spawnObject(par)
+        rangeCounter[i].setValue(0)
+		rangeCounter[i].setName('Range')
+        rangeCounter[i].setColorTint({r = 0; g = 0; b = 0})
+    end
+
+end
+
+function spawnShieldCounters()
+
+    rangeCounter = {}
+    local par = {}
+    par.type = 'Counter'
+
+    for i = 1, players_Size, 1
+    do
+
+
+        par.position = players_[i].getHandTransform().position
+        par.position.x = par.position.x + (players_[i].getHandTransform().forward.x * 5)
+        par.position.z = par.position.z + (players_[i].getHandTransform().forward.z * 5)
+
+		par.position.x = par.position.x + (players_[i].getHandTransform().right.x * 3)
+		par.position.z = par.position.z + (players_[i].getHandTransform().right.z * 3)
+
+		rangeCounter[i] = spawnObject(par)
+        rangeCounter[i].setValue(playerShieldpoints[i])
+		rangeCounter[i].setName('Shieldpoints')
+        rangeCounter[i].setColorTint({r = 1; g = 1; b = 0})
+    end
+
+end
+
+
+    --[[ Other Funcs --]]
+function tableLength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
